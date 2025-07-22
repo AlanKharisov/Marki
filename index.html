@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MARKIdentity - NFT Platform</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Alata&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+   <link rel="stylesheet" href="css/styles.css">
+    <body>
+    <div id="app">
+      <!-- Фоновое изображение -->
+      <div
+        class="background"
+        :style="{backgroundPosition: backgroundPosition}"
+      ></div>
+
+      <!-- Экраны авторизации -->
+      <div
+        class="screen splash-screen"
+        :class="{active: currentScreen === 'splash'}"
+      >
+        <div class="content">
+          <h1 class="mark-identity">MARK<span>Identity</span></h1>
+        </div>
+      </div>
+
+      <div
+        class="screen welcome-screen"
+        :class="{active: currentScreen === 'welcome'}"
+      >
+        <div class="content">
+          <h1 class="welcome-title">Welcome</h1>
+          <p class="welcome-text">
+            Is not just a platform – it's your safeguard for creative ownership
+          </p>
+          <div class="features">
+            <div class="feature-item">
+              <span>PROTECT YOUR PROPERTY</span>
+              <i class="fas fa-brain icon-feature"></i>
+            </div>
+            <div class="feature-item">
+              <span>SECURE YOUR IDEAS</span>
+              <i class="fas fa-lock icon-feature"></i>
+            </div>
+            <div class="feature-item">
+              <span>EXPERIENCE YOUR LEGACY</span>
+              <i class="fas fa-magic icon-feature"></i>
+            </div>
+          </div>
+          <div class="next-btn-container">
+            <button class="next-btn" @click="currentScreen = 'auth'">
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="screen auth-screen"
+        :class="{active: currentScreen === 'auth'}"
+      >
+        <div
+          class="auth-form signup-form"
+          :class="{active: currentAuthForm === 'signup'}"
+        >
+          <div class="auth-header">
+            <h2 class="auth-title">Sign Up</h2>
+          </div>
+          <div class="auth-container">
+            <form @submit.prevent="handleAuth('signup')">
+              <div class="form-group">
+                <label>Phone Number</label>
+                <input
+                  type="tel"
+                  placeholder="+380995683023"
+                  required
+                  v-model="signupPhone"
+                />
+              </div>
+              <div class="form-group">
+                <label>Password</label>
+                <input
+                  type="password"
+                  placeholder="Enter password"
+                  required
+                  v-model="signupPassword"
+                />
+              </div>
+              <button type="submit" class="submit-btn">Sign Up</button>
+            </form>
+            <p class="divider">or</p>
+            <div class="social-buttons">
+              <button class="social-btn facebook">
+                <i class="fab fa-facebook-f"></i>
+              </button>
+              <button class="social-btn google">
+                <i class="fab fa-google"></i>
+              </button>
+              <button class="social-btn apple">
+                <i class="fab fa-apple"></i>
+              </button>
+            </div>
+            <p class="switch-auth">
+              Already have an account?
+              <a href="#" @click.prevent="currentAuthForm = 'login'">Sign In</a>
+            </p>
+          </div>
+        </div>
+
+        <div
+          class="auth-form login-form"
+          :class="{active: currentAuthForm === 'login'}"
+        >
+          <div class="auth-header">
+            <h2 class="auth-title">Sign In</h2>
+          </div>
+          <div class="auth-container">
+            <form @submit.prevent="handleAuth('login')">
+              <div class="form-group">
+                <label>Phone Number</label>
+                <input
+                  type="tel"
+                  placeholder="+380995683023"
+                  required
+                  v-model="loginPhone"
+                />
+              </div>
+              <div class="form-group">
+                <label>Password</label>
+                <input
+                  type="password"
+                  placeholder="Enter password"
+                  required
+                  v-model="loginPassword"
+                />
+              </div>
+              <button type="submit" class="submit-btn">Sign In</button>
+              <button class="forgot-password">Forgot password?</button>
+            </form>
+            <p class="divider">or</p>
+            <div class="social-buttons">
+              <button class="social-btn facebook">
+                <i class="fab fa-facebook-f"></i>
+              </button>
+              <button class="social-btn google">
+                <i class="fab fa-google"></i>
+              </button>
+              <button class="social-btn apple">
+                <i class="fab fa-apple"></i>
+              </button>
+            </div>
+            <p class="switch-auth">
+              Don't have an account?
+              <a href="#" @click.prevent="currentAuthForm = 'signup'"
+                >Sign Up</a
+              >
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Основное приложение -->
+      <div class="app-content" :class="{active: currentScreen === 'app'}">
+        <!-- Главная страница -->
+        <div class="page home-page" :class="{active: currentPage === 'home'}">
+          <div class="search-bar">
+            <i class="fas fa-bars menu-icon"></i>
+            <div class="search-input">
+              <i class="fas fa-search"></i>
+              <input
+                type="text"
+                placeholder="Search NFTs..."
+                v-model="searchQuery"
+                @input="filterPosts"
+              />
+            </div>
+            <i class="fas fa-ellipsis-v menu-icon"></i>
+          </div>
+
+          <div class="nft-post" v-for="post in filteredPosts" :key="post.id">
+            <div class="user-info">
+              <div class="avatar">
+                <img
+                  :src="post.userAvatar || 'img/default-avatar.png'"
+                  alt="User Avatar"
+                />
+              </div>
+              <div>
+                <div class="username">{{ post.userName }}</div>
+                <div class="post-time">{{ formatTime(post.createdAt) }}</div>
+              </div>
+            </div>
+
+            <div class="nft-title">{{ post.title }}</div>
+            <div class="nft-description">{{ post.description }}</div>
+
+            <div class="tags" v-if="post.tags && post.tags.length">
+              <div class="tag" v-for="tag in post.tags" :key="tag">
+                #{{ tag }}
+              </div>
+            </div>
+
+            <div class="nft-content">
+              <div class="nft-image">
+                <img
+                  :src="post.nftImage || 'img/default-nft.png'"
+                  alt="NFT Image"
+                />
+              </div>
+              <div class="sound-wave">Sound Wave Visualization</div>
+            </div>
+
+            <div class="post-actions">
+              <div class="action-left">
+                <div class="like-btn" @click="toggleLike(post.id)">
+                  <i :class="['far', 'fa-heart', { 'fas': post.liked }]"></i> {{
+                  post.likes }}
+                </div>
+                <div class="comment-btn" @click="toggleComments(post.id)">
+                  <i class="far fa-comment"></i> {{ post.comments.length }}
+                </div>
+                <div class="share-btn">
+                  <i class="fas fa-share"></i>
+                </div>
+              </div>
+              <button class="buy-btn" @click="buyNFT(post)">Buy</button>
+            </div>
+
+            <!-- Комментарии -->
+            <div class="comments-section" v-if="post.showComments">
+              <div class="comment-form">
+                <input
+                  type="text"
+                  class="comment-input"
+                  placeholder="Write a comment..."
+                  v-model="newComment"
+                  @keyup.enter="addComment(post.id)"
+                />
+                <button class="comment-submit" @click="addComment(post.id)">
+                  Post
+                </button>
+              </div>
+              <div class="comment-list">
+                <div
+                  class="comment-item"
+                  v-for="comment in post.comments"
+                  :key="comment.id"
+                >
+                  <div class="comment-avatar">
+                    <img
+                      :src="comment.userAvatar || 'img/default-avatar.png'"
+                      alt="User Avatar"
+                    />
+                  </div>
+                  <div class="comment-content">
+                    <div class="comment-user">{{ comment.userName }}</div>
+                    <div class="comment-text">{{ comment.text }}</div>
+                    <div class="comment-time">
+                      {{ formatTime(comment.createdAt) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Страница кошелька -->
+        <div
+          class="page wallet-page"
+          :class="{active: currentPage === 'wallet'}"
+        >
+          <div class="wallet-section">
+            <h1 class="wallet-title">Your Wallet</h1>
+            <div class="tokens-container">
+              <div class="token-card">
+                <div class="token-header">
+                  <div class="token-name">ICP</div>
+                  <div class="token-logo"></div>
+                </div>
+                <div class="token-footer">
+                  <div class="token-placeholder">---</div>
+                  <div class="token-divider"></div>
+                  <div class="token-usd">342$</div>
+                </div>
+              </div>
+              <div class="token-card">
+                <div class="token-header">
+                  <div class="token-name">Polygon</div>
+                  <div class="token-logo"></div>
+                </div>
+                <div class="token-footer">
+                  <div class="token-placeholder">---</div>
+                  <div class="token-divider"></div>
+                  <div class="token-usd">245$</div>
+                </div>
+              </div>
+              <div class="token-card">
+                <div class="token-header">
+                  <div class="token-name">Solana</div>
+                  <div class="token-logo"></div>
+                </div>
+                <div class="token-footer">
+                  <div class="token-placeholder">---</div>
+                  <div class="token-divider"></div>
+                  <div class="token-usd">---</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="nft-section">
+            <div class="nft-header">
+              <div class="nft-title">Your NFT Collection</div>
+              <button class="config-button">⚙️</button>
+            </div>
+
+            <div class="nft-container">
+              <div
+                class="nft-item"
+                v-for="nft in userNFTs"
+                :key="nft.id"
+                :class="{flipped: flippedNFTs[nft.id]}"
+                @click="toggleFlip(nft.id)"
+              >
+                <div class="nft-flip-card">
+                  <div class="nft-flip-card-inner">
+                    <div class="nft-flip-card-front">
+                      <img :src="nft.image" alt="NFT" />
+                    </div>
+                    <div class="nft-flip-card-back">
+                      <div :id="'qrcode-' + nft.id"></div>
+                      <p class="qrcode-title">NFT Ownership Proof</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Страница уведомлений -->
+        <div
+          class="page alert-page"
+          :class="{active: currentPage === 'alerts'}"
+        >
+          <div class="alert-title">All notifications</div>
+
+          <div class="notification" v-for="alert in alerts" :key="alert.id">
+            <div class="notification-title">
+              <span>{{ alert.title }}</span>
+              <span class="notification-time"
+                >{{ formatTime(alert.createdAt) }}</span
+              >
+            </div>
+            <div class="notification-text">{{ alert.text }}</div>
+          </div>
+        </div>
+
+        <!-- Страница профиля -->
+        <div
+          class="page profile-page"
+          :class="{active: currentPage === 'profile'}"
+        >
+          <div class="profile-header">
+            <div class="back-btn" @click="currentPage = 'home'">
+              <i class="fas fa-arrow-left"></i>
+            </div>
+            <div class="profile-avatar">
+              <img
+                :src="currentUser.avatar || 'img/default-avatar.png'"
+                alt="Profile Avatar"
+              />
+            </div>
+            <div class="profile-name">{{ currentUser.name }}</div>
+            <div class="profile-location">
+              {{ currentUser.location || 'No location specified' }}
+            </div>
+            <div class="profile-bio">{{ currentUser.bio || 'No bio yet' }}</div>
+          </div>
+
+          <div class="section-title">Account</div>
+
+          <div class="account-card">
+            <div class="account-item" @click="editProfile">
+              <div>
+                <i class="fas fa-user-edit"></i>
+                <span>Edit Profile</span>
+              </div>
+              <i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="account-item" @click="currentPage = 'security'">
+              <div>
+                <i class="fas fa-lock"></i>
+                <span>Security</span>
+              </div>
+              <i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="account-item" @click="currentPage = 'wallet-settings'">
+              <div>
+                <i class="fas fa-wallet"></i>
+                <span>Wallet settings</span>
+              </div>
+              <i class="fas fa-chevron-right"></i>
+            </div>
+            <div class="account-item" @click="logout">
+              <div>
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+              </div>
+              <i class="fas fa-chevron-right"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Новая страница Security -->
+        <div
+          class="page security-page"
+          :class="{active: currentPage === 'security'}"
+        >
+          <div class="profile-header">
+            <div class="back-btn" @click="currentPage = 'profile'">
+              <i class="fas fa-arrow-left"></i>
+            </div>
+            <h2 class="security-title">Security Settings</h2>
+          </div>
+
+          <div class="security-container">
+            <div class="form-section">
+              <span class="section-title">Change Password</span>
+              <div class="form-group">
+                <label>Current Password</label>
+                <input
+                  type="password"
+                  placeholder="Enter current password"
+                  v-model="currentPassword"
+                />
+              </div>
+              <div class="form-group">
+                <label>New Password</label>
+                <input
+                  type="password"
+                  placeholder="Enter new password"
+                  v-model="newPassword"
+                />
+              </div>
+              <div class="form-group">
+                <label>Confirm New Password</label>
+                <input
+                  type="password"
+                  placeholder="Confirm new password"
+                  v-model="confirmNewPassword"
+                />
+              </div>
+              <button class="save-btn" @click="changePassword">
+                Save Changes
+              </button>
+            </div>
+
+            <div class="form-section">
+              <span class="section-title">Two-Factor Authentication</span>
+              <div class="toggle-2fa">
+                <span>Enable 2FA</span>
+                <label class="switch">
+                  <input type="checkbox" v-model="twoFactorEnabled" />
+                  <span class="slider round"></span>
+                </label>
+              </div>
+              <p class="info-text">
+                Two-factor authentication adds an extra layer of security to
+                your account.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Новая страница Wallet Settings -->
+        <div
+          class="page wallet-settings-page"
+          :class="{active: currentPage === 'wallet-settings'}"
+        >
+          <div class="profile-header">
+            <div class="back-btn" @click="currentPage = 'profile'">
+              <i class="fas fa-arrow-left"></i>
+            </div>
+            <h2 class="wallet-settings-title">Wallet Settings</h2>
+          </div>
+
+          <div class="wallet-settings-container">
+            <div v-if="!walletCreated" class="setup-wallet">
+              <h3>Set Up Your Wallet</h3>
+              <p>To use NFT features, you need to create a secure wallet.</p>
+
+              <div class="form-group">
+                <label>Email</label>
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  v-model="walletEmail"
+                />
+              </div>
+              <div class="form-group">
+                <label>Wallet Password</label>
+                <input
+                  type="password"
+                  placeholder="Create wallet password"
+                  v-model="walletPassword"
+                />
+              </div>
+              <div class="form-group">
+                <label>Confirm Password</label>
+                <input
+                  type="password"
+                  placeholder="Confirm wallet password"
+                  v-model="confirmWalletPassword"
+                />
+              </div>
+              <div class="form-group">
+                <label>Recovery Phrase</label>
+                <div class="recovery-phrase" v-if="recoveryPhrase">
+                  {{ recoveryPhrase }}
+                  <button class="copy-btn" @click="copyRecoveryPhrase">
+                    <i class="fas fa-copy"></i> Copy
+                  </button>
+                </div>
+                <div v-else>
+                  <p>This will be generated after wallet creation</p>
+                </div>
+              </div>
+              <button class="create-wallet-btn" @click="createWallet">
+                Create Wallet
+              </button>
+            </div>
+
+            <div v-else class="wallet-info">
+              <h3>Your Wallet Information</h3>
+              <div class="wallet-detail">
+                <span>Wallet Address:</span>
+                <span class="wallet-address">{{ walletAddress }}</span>
+                <button class="copy-btn" @click="copyWalletAddress">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+              <div class="wallet-detail">
+                <span>Connected Email:</span>
+                <span>{{ walletEmail }}</span>
+              </div>
+              <div class="wallet-detail">
+                <span>Wallet Status:</span>
+                <span class="status-active">Active</span>
+              </div>
+
+              <div class="wallet-actions">
+                <button class="wallet-action-btn" @click="showRecoveryPhrase">
+                  <i class="fas fa-key"></i> Show Recovery Phrase
+                </button>
+                <button class="wallet-action-btn" @click="changeWalletPassword">
+                  <i class="fas fa-lock"></i> Change Password
+                </button>
+                <button class="wallet-action-btn danger" @click="resetWallet">
+                  <i class="fas fa-trash"></i> Reset Wallet
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Страница добавления NFT -->
+        <div
+          class="page add-nft-page"
+          :class="{active: currentPage === 'add-nft'}"
+        >
+          <h2 class="add-nft-title">Create NFT</h2>
+
+          <div class="form-section">
+            <span class="section-title">Property NFT Type</span>
+            <div class="ownership-options">
+              <div
+                class="ownership-option"
+                :class="{selected: ownershipType === 'own'}"
+                @click="ownershipType = 'own'"
+              >
+                <i class="fas fa-user"></i>
+                <div>Own</div>
+              </div>
+              <div
+                class="ownership-option"
+                :class="{selected: ownershipType === 'coauthored'}"
+                @click="ownershipType = 'coauthored'"
+              >
+                <i class="fas fa-users"></i>
+                <div>Co-authored</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <span class="section-title">NFT name*</span>
+            <input
+              type="text"
+              class="text-input"
+              placeholder="Enter NFT name"
+              v-model="nftName"
+            />
+          </div>
+
+          <div class="form-section">
+            <span class="section-title">NFT image*</span>
+            <div class="upload-area" @click="triggerFileInput('nft')">
+              <div class="upload-icon">
+                <i class="fas fa-image"></i>
+              </div>
+              <div class="upload-text">
+                <strong>Drag and drop or click to upload</strong>
+                <small
+                  >You may change this after deploying your contract.<br />Recommended
+                  size: 350 x 350.<br />File types: JPG, PNG, SVG, or GIF</small
+                >
+              </div>
+              <input
+                type="file"
+                id="nft-upload"
+                style="display: none"
+                @change="handleNftUpload"
+              />
+            </div>
+            <div class="nft-preview" v-if="nftImagePreview">
+              <img
+                :src="nftImagePreview"
+                alt="NFT Preview"
+                style="max-width: 100%; max-height: 200px; margin-top: 10px"
+              />
+            </div>
+          </div>
+
+          <div class="form-section">
+            <span class="section-title">Description*</span>
+            <textarea
+              class="text-input"
+              rows="3"
+              placeholder="Enter description here..."
+              v-model="nftDescription"
+            ></textarea>
+          </div>
+
+          <div class="form-section">
+            <span class="section-title">Tags*</span>
+            <input
+              type="text"
+              class="tags-input"
+              placeholder="Enter tags #here"
+              v-model="nftTags"
+            />
+          </div>
+
+          <div class="form-section">
+            <span class="section-title">External link*</span>
+            <input
+              type="text"
+              class="text-input"
+              placeholder="Enter URL"
+              v-model="nftExternalLink"
+            />
+          </div>
+
+          <div class="form-section">
+            <span class="section-title">Attributes</span>
+            <div style="color: #888; margin-bottom: 10px">
+              Number of attributes
+            </div>
+            <div class="attributes-control">
+              <button class="attribute-btn" @click="decreaseAttributes">
+                -
+              </button>
+              <span class="attributes-count">{{ attributesCount }}</span>
+              <button class="attribute-btn" @click="increaseAttributes">
+                +
+              </button>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <span class="section-title">Traits</span>
+            <div style="color: #888; margin-bottom: 10px">
+              Traits describe attributes of your item. They appear as filters
+              inside your collection page and are also listed out inside your
+              item page.
+            </div>
+            <button class="add-trait-btn" @click="addTrait">
+              <i class="fas fa-plus"></i>
+              <span>Add traits</span>
+            </button>
+          </div>
+
+          <button class="create-nft-btn" @click="createNFT">Create NFT</button>
+
+          <!-- Раздел с QR-кодом -->
+          <div class="qr-section" v-if="qrCodeGenerated">
+            <h3 class="qr-title">Share your NFT</h3>
+            <div class="qr-container" id="qrcode"></div>
+            <button class="generate-qr-btn" @click="generateQRCode">
+              Regenerate QR Code
+            </button>
+          </div>
+        </div>
+
+        <!-- Нижняя навигация -->
+        <div class="bottom-nav">
+          <div
+            class="nav-item"
+            :class="{active: currentPage === 'home'}"
+            @click="currentPage = 'home'"
+          >
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+          </div>
+          <div
+            class="nav-item"
+            :class="{active: currentPage === 'wallet'}"
+            @click="currentPage = 'wallet'"
+          >
+            <i class="fas fa-wallet"></i>
+            <span>Wallet</span>
+          </div>
+          <div
+            class="nav-item"
+            :class="{active: currentPage === 'add-nft'}"
+            @click="currentPage = 'add-nft'"
+          >
+            <i class="fas fa-plus-circle"></i>
+            <span>Add NFT</span>
+          </div>
+          <div
+            class="nav-item"
+            :class="{active: currentPage === 'alerts'}"
+            @click="currentPage = 'alerts'"
+          >
+            <i class="fas fa-bell"></i>
+            <span>Alerts</span>
+          </div>
+          <div
+            class="nav-item"
+            :class="{active: currentPage === 'profile'}"
+            @click="currentPage = 'profile'"
+          >
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+  <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
